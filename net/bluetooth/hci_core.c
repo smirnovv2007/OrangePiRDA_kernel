@@ -34,7 +34,7 @@
 #include <net/bluetooth/hci_core.h>
 
 #ifdef CONFIG_BT_RANDADDR
-#define USE_MAC_FROM_RDA_NVRAM
+//#define USE_MAC_FROM_RDA_NVRAM
 #ifdef USE_MAC_FROM_RDA_NVRAM
 #include <plat/md_sys.h>
 struct bt_mac_info {

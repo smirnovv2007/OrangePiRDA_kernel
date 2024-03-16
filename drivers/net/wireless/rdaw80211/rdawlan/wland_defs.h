@@ -159,7 +159,7 @@ enum WLAND_CHIP_VERSION {
 #define SKIP_REPORT_CHANNEL_14
 
 // Low snr agc setting
-#define CHINA_VERSION
+// #define CHINA_VERSION
 
 /* CDC flag definitions */
 #define CDC_DCMD_LEN_MASK	                    0x0FFF	/* id an cmd pairing */
@@ -195,6 +195,7 @@ enum WLAND_CHIP_VERSION {
 
 /* define support cfg80211 or wext mode */
 #define WLAND_CFG80211_SUPPORT
+//#define WLAND_WEXT_SUPPORT
 
 /* define support wapi sec mode */
 //#define WLAND_WAPI_SUPPORT

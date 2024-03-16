@@ -197,7 +197,7 @@ int sdioh_request_bytes(struct wland_sdio_dev *sdiodev, uint rw, uint addr,
 					}
 					memcpy(page_address(pg), packet_to_send, batch);
 					packet_to_send = page_address(pg);
-					WLAND_DBG(SDIO, DEBUG, "wlan data cross page boundary addr:%x size:%x \n",
+					WLAND_DBG(SDIO, TRACE, "wlan data cross page boundary addr:%x size:%x \n",
 						(u32)(packet_to_send), batch);
 					err_ret = sdio_writesb(sdiodev->func, addr, packet_to_send, batch);
 					__free_page(pg);

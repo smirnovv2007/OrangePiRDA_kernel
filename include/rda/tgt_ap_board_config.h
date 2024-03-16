@@ -31,13 +31,13 @@
 #define _TGT_AP_SPI_NAND_READDELAY (4)
 
 /* ADMMC clock */
-#define _TGT_AP_SDMMC1_MAX_FREQ		(30000000)/*3*/
+#define _TGT_AP_SDMMC1_MAX_FREQ		(50000000)/*5*/
 #define _TGT_AP_SDMMC1_MCLK_INV		(1)
 #define _TGT_AP_SDMMC1_MCLK_ADJ		(1)
-#define _TGT_AP_SDMMC2_MAX_FREQ		(20000000)/*2*/
+#define _TGT_AP_SDMMC2_MAX_FREQ		(50000000)/*5*/
 #define _TGT_AP_SDMMC2_MCLK_INV		(1)
 #define _TGT_AP_SDMMC2_MCLK_ADJ		(3)
-#define _TGT_AP_SDMMC3_MAX_FREQ		(30000000)/*3*/
+#define _TGT_AP_SDMMC3_MAX_FREQ		(50000000)/*5*/
 #define _TGT_AP_SDMMC3_MCLK_ADJ		(0)
 
 /* I2C clocks */

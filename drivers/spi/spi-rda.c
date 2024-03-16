@@ -100,10 +100,8 @@ static void rda_cs_activate(struct rda_spi *rdaspi, struct spi_device *spi)
 	struct spi_message *msg = container_of(&spi,struct spi_message,spi);
 
 	/*re-config spi registers*/
-	rda_spi_set_config(rdaspi,msg);
-
 	/* Set the register */
-	rdaspi->regs->ctrl = rdacs->ctrl;
+	rdaspi->regs->ctrl = rda_spi_set_config(rdaspi,msg);
 	rdaspi->regs->cfg = rdacs->cfg;
 	rdaspi->regs->irq = rdacs->irqmask;
 	rdaspi->dmarxchannel = HAL_UNKNOWN_CHANNEL;

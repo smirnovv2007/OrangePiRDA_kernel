@@ -191,11 +191,11 @@ int wland_sendpkt(struct wland_if *ifp, struct sk_buff *pktbuf)
 		WLAND_DBG(DCMD, TRACE, "dest: %pM\n", eh->h_dest);
 		WLAND_DBG(DCMD, TRACE, "source: %pM\n", eh->h_source);
 		if (is_multicast_ether_addr(eh->h_dest)) {
-			WLAND_DBG(DCMD, DEBUG, "%pM is multicast ether addr\n",
+			WLAND_DBG(DCMD, TRACE, "%pM is multicast ether addr\n",
 				eh->h_dest);
 		}
 		if (ntohs(eh->h_proto) == ETH_P_PAE) {
-			WLAND_DBG(DCMD, DEBUG, "eh->h_proto == ETH_P_PAE\n");
+			WLAND_DBG(DCMD, TRACE, "eh->h_proto == ETH_P_PAE\n");
 		}
 	}
 

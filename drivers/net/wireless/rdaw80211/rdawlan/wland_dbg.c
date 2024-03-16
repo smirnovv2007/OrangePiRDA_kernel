@@ -40,7 +40,7 @@ int wland_dbg_area = WLAND_DATA_VAL |
 	WLAND_WEXT_VAL |
 	WLAND_DEFAULT_VAL | WLAND_SDIO_VAL | WLAND_CFG80211_VAL;
 
-int wland_dbg_level = WLAND_ERROR_LEVEL;
+int wland_dbg_level = WLAND_INFO_LEVEL;
 int wland_dump_area =
 	//WLAND_TX_CTRL_AREA                    |
 	//WLAND_TX_MSDU_AREA                   |

@@ -148,9 +148,9 @@ void rda_start_host(struct usb_bus *host)
 	otg = musb->xceiv->otg;
 	spin_lock_irqsave(&musb->lock, flags);
 	/* disable high speed when host*/
-	power = musb_readb(regs, MUSB_POWER);
-	power &= ~MUSB_POWER_HSENAB;
-	musb_writeb(regs, MUSB_POWER, power);
+	//power = musb_readb(regs, MUSB_POWER);
+	//power &= ~MUSB_POWER_HSENAB;
+	//musb_writeb(regs, MUSB_POWER, power);
 
 	devctl = MUSB_DEVCTL_SESSION;
 	musb_writeb(regs, MUSB_DEVCTL, devctl);

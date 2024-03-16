@@ -229,21 +229,21 @@ static ssize_t rdabp_gpio_enable_irq_store(struct device *dev,
 	return count;
 }
 
-static DEVICE_ATTR(gpio_open, 0777,
+static DEVICE_ATTR(gpio_open, 0333,
 		NULL, rdabp_gpio_open_store);
-static DEVICE_ATTR(gpio_close,0777,
+static DEVICE_ATTR(gpio_close,0333,
 		NULL, rdabp_gpio_close_store);
-static DEVICE_ATTR(gpio_set_io, 0777,
+static DEVICE_ATTR(gpio_set_io, 0333,
 		NULL,rdabp_gpio_set_io_store);
-static DEVICE_ATTR(gpio_get_value, 0777,
+static DEVICE_ATTR(gpio_get_value, 0333,
 		NULL,rdabp_gpio_get_value_store);
-static DEVICE_ATTR(gpio_set_value,  0777,
+static DEVICE_ATTR(gpio_set_value,  0333,
 		NULL,rdabp_gpio_set_value_store);
-static DEVICE_ATTR(gpio_enable_irq, 0777,
+static DEVICE_ATTR(gpio_enable_irq, 0333,
 		NULL,rdabp_gpio_enable_irq_store);
-static DEVICE_ATTR(gpo_set, 0777,
+static DEVICE_ATTR(gpo_set, 0333,
 		NULL, OrangePi_2G_IOT_gpio_set_store);
-static DEVICE_ATTR(gpo_clear, 0777,
+static DEVICE_ATTR(gpo_clear, 0333,
 		NULL, OrangePi_2G_IOT_gpio_clear_store);
 
 
@@ -286,7 +286,7 @@ static int rda_gpioc_platform_probe(struct platform_device *pdev)
 	led_trigger_register_simple(LED_CAM_FLASH, &rda_sensor_led);
 	mdelay(5);
 	led_trigger_event(rda_sensor_led, LED_HALF);
-	printk(" rda_gpioc_platform_probe22222222222222 \r\n  ");
+	printk(KERN_INFO "rda_gpioc_platform_probe 2\n");
 	#endif
 
 	return ret;

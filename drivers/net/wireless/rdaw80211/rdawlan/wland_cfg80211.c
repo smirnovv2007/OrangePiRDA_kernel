@@ -160,25 +160,23 @@ static const struct ieee80211_regdomain wland_regdom = {
 	.n_reg_rules = 4,
 	.alpha2 = "99",
 	.reg_rules = {
-			/*
-			 * IEEE 802.11b/g, channels 1..11
-			 */
-			REG_RULE(2412 - 10, 2472 + 10, 40, 6, 20, 0),
-			/*
-			 * If any
-			 */
-			/*
-			 * IEEE 802.11 channel 14 - Only JP enables this and for 802.11b only
-			 */
-			REG_RULE(2484 - 10, 2484 + 10, 20, 6, 20, 0),
-			/*
-			 * IEEE 802.11a, channel 36..64
-			 */
-			REG_RULE(5150 - 10, 5350 + 10, 40, 6, 20, 0),
-			/*
-			 * IEEE 802.11a, channel 100..165
-			 */
-		REG_RULE(5470 - 10, 5850 + 10, 40, 6, 20, 0),}
+		/*
+		* IEEE 802.11b/g, channels 1..11
+		*/
+		REG_RULE(2412 - 10, 2472 + 10, 40, 6, 20, 0),
+		/*
+		* IEEE 802.11 channel 14 - Only JP enables this and for 802.11b only
+		*/
+		REG_RULE(2484 - 10, 2484 + 10, 20, 6, 20, 0),
+		/*
+		* IEEE 802.11a, channel 36..64
+		*/
+		REG_RULE(5150 - 10, 5350 + 10, 40, 6, 20, 0),
+		/*
+		* IEEE 802.11a, channel 100..165
+		*/
+		REG_RULE(5470 - 10, 5850 + 10, 40, 6, 20, 0),
+	}
 };
 
 static const u32 __wl_cipher_suites[] = {
@@ -223,7 +221,7 @@ struct parsed_vndr_ies {
 /* Smallest mW value that will round up to the first table entry, QDBM_OFFSET.
  * Value is ( mW(QDBM_OFFSET - 1) + mW(QDBM_OFFSET) ) / 2
  */
-#define QDBM_TABLE_LOW_BOUND 6493	/* Low bound */
+#define QDBM_TABLE_LOW_BOUND 42170	/* Low bound */
 
 /* Largest mW value that will round down to the last table entry,
  * QDBM_OFFSET + QDBM_TABLE_LEN-1.
@@ -1602,9 +1600,7 @@ static s32 cfg80211_disconnect(struct wiphy *wiphy, struct net_device *ndev,
 }
 
 static s32 cfg80211_set_tx_power(struct wiphy *wiphy,
-#if    LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0)
 	struct wireless_dev *wdev,
-#endif				/*LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0) */
 	enum nl80211_tx_power_setting type, s32 mbm)
 {
 	struct wland_cfg80211_info *cfg = wiphy_to_cfg(wiphy);
@@ -1613,17 +1609,15 @@ static s32 cfg80211_set_tx_power(struct wiphy *wiphy,
 	u16 txpwrmw;
 	s32 err = 0, disable = 0;
 
-#if    LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0)
 	s32 dbm = MBM_TO_DBM(mbm);
-#else
-	s32 dbm = mbm;
-#endif /*LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0) */
+	WLAND_DBG(CFG80211, INFO, "dbm:%d\n", dbm);
 
 	WLAND_DBG(CFG80211, TRACE, "Enter\n");
 
 	if (!check_vif_up(ifp->vif))
 		return -EIO;
 
+	WLAND_DBG(CFG80211, INFO, "type:%d\n", type);
 	switch (type) {
 	case NL80211_TX_POWER_AUTOMATIC:
 		break;
@@ -1651,26 +1645,30 @@ static s32 cfg80211_set_tx_power(struct wiphy *wiphy,
 		WLAND_ERR("SET_RADIO error (%d)\n", err);
 #endif
 
-	if (dbm > 0xFFFF)
-		txpwrmw = 0xFFFF;
-	else
-		txpwrmw = (u16) dbm;
+	if (dbm > 20)
+		dbm = 20;
+	if (dbm < 6)
+		dbm = 6;
 
+	txpwrmw = (u16) dbm;
+
+	WLAND_DBG(CFG80211, DEBUG, "new tx_power:%d\n", dbm);
+	WLAND_DBG(CFG80211, DEBUG, "old tx_power:%d\n", cfg->conf->tx_power);
 	cfg->conf->tx_power = dbm;
 
+	WLAND_DBG(CFG80211, DEBUG, "txpwrmw:%d\n", txpwrmw);
 	dbm = wland_mw_to_qdbm(txpwrmw);
+	WLAND_DBG(CFG80211, DEBUG, "new dbm:%d\n", dbm);
 
 	err = wland_fil_iovar_data_set(ifp, "qtxpower", &dbm, sizeof(dbm));
 
 done:
-	WLAND_DBG(CFG80211, TRACE, "Done(qtxpower:%d)\n", err);
+	WLAND_DBG(CFG80211, INFO, "Done(err:%d, tx_power:%d)\n", err, cfg->conf->tx_power);
 	return err;
 }
 
 static s32 cfg80211_get_tx_power(struct wiphy *wiphy,
-#if    LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0)
 	struct wireless_dev *wdev,
-#endif				/* LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0) */
 	s32 * dbm)
 {
 	struct wland_cfg80211_info *cfg = wiphy_to_cfg(wiphy);
@@ -1689,11 +1687,21 @@ static s32 cfg80211_get_tx_power(struct wiphy *wiphy,
 		goto done;
 	}
 
+	WLAND_DBG(CFG80211, DEBUG, "txpwrdbm:%d\n", txpwrdbm);
+	WLAND_DBG(CFG80211, DEBUG, "cfg tx_power:%d\n", cfg->conf->tx_power);
 	result = (u8) (txpwrdbm & ~TXPWR_OVERRIDE);
+	WLAND_DBG(CFG80211, DEBUG, "result:%d\n", result);
 	*dbm = (s32) wland_qdbm_to_mw(result);
-
+	if (cfg->conf->tx_power > 20)
+		cfg->conf->tx_power = 20;
+	if (cfg->conf->tx_power == 0)
+		cfg->conf->tx_power = 20;
+	if (cfg->conf->tx_power < 6)
+		cfg->conf->tx_power = 6;
+	*dbm = cfg->conf->tx_power;
+	WLAND_DBG(CFG80211, DEBUG, "dbm:%d\n", result);
 done:
-	WLAND_DBG(CFG80211, TRACE, "Done(dbm:%d)\n", *dbm);
+	WLAND_DBG(CFG80211, INFO, "Done(tx_power:%d)\n", cfg->conf->tx_power);
 	return err;
 }
 
@@ -2991,7 +2999,7 @@ static s32 notify_escan_handler(struct wland_if *ifp,
 		}
 #endif /*SKIP_REPORT_CHANNEL_14 */
 #ifdef WLAND_P2P_SUPPORT
-		if (wland_p2p_scan_finding_common_channel(cfg, bss_info_le))
+		if (wland_p2p_scan_finding_common_channel(cfg, &bss_info_le))
 			goto exit;
 #endif /* WLAND_P2P_SUPPORT */
 
@@ -5224,7 +5232,6 @@ static const struct ieee80211_txrx_stypes
 		}
 };
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0)
 void cfg80211_reg_notifier(struct wiphy *wiphy,
 	struct regulatory_request *request)
 {
@@ -5269,65 +5276,6 @@ void cfg80211_reg_notifier(struct wiphy *wiphy,
 		cspec.country_abbrev, cspec.rev);
 	return;
 }
-#else
-int cfg80211_reg_notifier(struct wiphy *wiphy,
-	struct regulatory_request *request)
-{
-	struct wland_cfg80211_info *cfg =
-		(struct wland_cfg80211_info *) wiphy_priv(wiphy);
-	struct wland_country cspec = { {
-		0}, 0, {
-		0}
-	};
-	int err = 0;
-
-	if (!request || !cfg) {
-		WLAND_ERR("Invalid arg\n");
-		return err;
-	}
-
-	WLAND_DBG(CFG80211, TRACE, "ccode: %c%c Initiator: %d\n",
-		request->alpha2[0], request->alpha2[1], request->initiator);
-
-	/*
-	 * We support only REGDOM_SET_BY_USER as of now
-	 */
-	if (request->initiator != NL80211_REGDOM_SET_BY_USER) {
-		WLAND_ERR("reg_notifier for intiator:%d not supported \n",
-			request->initiator);
-		return err;
-	}
-
-	if (request->alpha2[0] == '0' && request->alpha2[1] == '0') {
-		/*
-		 * world domain
-		 */
-		WLAND_ERR("World domain. Setting XY/4 \n");
-		strncpy(cspec.country_abbrev, "XY", strlen("XY"));
-		cspec.rev = 4;
-	} else {
-		memcpy(cspec.country_abbrev, request->alpha2, 2);
-		cspec.country_abbrev[3] = '\0';
-		cspec.rev = -1;	/* Unspecified */
-	}
-
-#if 0
-	if ((ret = wldev_iovar_setbuf(cfg->wdev->netdev, "country",
-				(char *) &cspec, sizeof(cspec), cfg->ioctl_buf,
-				WLC_IOCTL_SMLEN, NULL)) < 0) {
-		WLAND_ERR("set country Failed :%d\n", ret);
-		goto exit;
-	}
-
-	if ((ret = wland_update_wiphybands(cfg, false)) < 0)
-		WLAND_ERR("wland_update_wiphybands failed\n");
-exit:
-#endif
-	WLAND_DBG(CFG80211, TRACE, "set country '%s/%d' done\n",
-		cspec.country_abbrev, cspec.rev);
-	return err;
-}
-#endif
 
 static struct wiphy *wland_setup_wiphy(struct device *phydev)
 {
@@ -5463,7 +5411,7 @@ static struct wiphy *wland_setup_wiphy(struct device *phydev)
 	//we will disregard the first regulatory hint (when the initiator is %REGDOM_SET_BY_CORE).
 	wiphy->flags |= WIPHY_FLAG_CUSTOM_REGULATORY;
 
-	WLAND_DBG(CFG80211, TRACE, "Registering custom regulatory.\n");
+	WLAND_DBG(CFG80211, INFO, "Registering custom regulatory.\n");
 
 	/*
 	 *the driver's regulatory notification callback,
@@ -5726,7 +5674,7 @@ static s32 notify_connect_status(struct wland_if *ifp,
 		ifp->vif->mode);
 
 	if (!check_vif_up(ifp->vif)) {
-		WLAND_ERR("Vif Not SetUp(event:%d,reason:%d)\n", e->event_code,
+		WLAND_DBG(CFG80211, TRACE, "Device is not ready - vif not set up (event:%d,reason:%d)\n", e->event_code,
 			e->reason);
 		err = -EINVAL;
 		return err;
@@ -6360,7 +6308,8 @@ s32 wland_cfg80211_up(struct net_device * ndev)
 	set_bit(VIF_STATUS_READY, &ifp->vif->sme_state);
 
 	if (cfg->dongle_up) {
-		WLAND_ERR("dongle up\n");
+		WLAND_DBG(CFG80211, TRACE, "dongle is already up and received another up request\n");
+		//WLAND_ERR("dongle up\n");
 		goto up_exit;
 	}
 
